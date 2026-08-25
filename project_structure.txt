@@ -1,0 +1,173 @@
+gi-endoscopy-ai/
+│
+├── README.md
+│
+├── .gitignore
+├── .dockerignore
+├── .env.example
+├── docker-compose.yml
+│
+├── backend/
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   │
+│   └── app/
+│       ├── __init__.py
+│       │
+│       ├── main.py                         # Creates the FastAPI application and registers all API routes.
+│       │
+│       ├── core/
+│       │   ├── __init__.py
+│       │   ├── config.py                   # Loads application settings and environment variables.
+│       │   └── lifespan.py                  # Loads AI models once when the FastAPI application starts.
+│       │
+│       ├── api/
+│       │   ├── __init__.py
+│       │   ├── router.py                   # Combines all API routers into the main API router.
+│       │   │
+│       │   └── v1/
+│       │       ├── __init__.py
+│       │       ├── health.py                # Provides API and AI model health-check endpoints.
+│       │       ├── image.py                 # Handles image upload and image inference requests.
+│       │       ├── video.py                 # Handles uploaded video processing requests.
+│       │       └── live.py                  # Provides WebSocket endpoints for live camera inference.
+│       │
+│       ├── schemas/
+│       │   ├── __init__.py
+│       │   └── prediction.py                # Defines Pydantic schemas for AI prediction responses.
+│       │
+│       ├── models/
+│       │   ├── __init__.py
+│       │   ├── detector.py                  # Loads and runs the trained polyp detection model.
+│       │   ├── segmenter.py                 # Loads and runs the trained polyp segmentation model.
+│       │   └── tracker.py                   # Provides object tracking for video and live inference.
+│       │
+│       ├── services/
+│       │   ├── __init__.py
+│       │   ├── inference_service.py         # Coordinates detection, segmentation, and tracking inference.
+│       │   ├── image_service.py             # Processes individual images and prepares inference results.
+│       │   ├── video_service.py             # Processes video frames and creates annotated video output.
+│       │   ├── live_service.py              # Processes live camera frames in real time.
+│       │   └── preprocessing_service.py     # Performs image resizing, normalization, and input preparation.
+│       │
+│       ├── utils/
+│       │   ├── __init__.py
+│       │   ├── visualization.py             # Draws bounding boxes, masks, labels, and tracking IDs.
+│       │   ├── video.py                     # Contains reusable video and frame-processing utilities.
+│       │   └── image.py                     # Contains reusable image-processing utilities.
+│       │
+│       └── storage/
+│           ├── .gitkeep
+│           ├── uploads/
+│           │   └── .gitkeep                 # Keeps the directory for temporary uploaded files.
+│           └── outputs/
+│               └── .gitkeep                 # Keeps the directory for generated inference results.
+│
+│
+├── frontend/
+│   ├── Dockerfile
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── tsconfig.json
+│   ├── vite.config.ts
+│   ├── index.html
+│   │
+│   └── src/
+│       ├── main.tsx                         # Starts the React frontend application.
+│       ├── App.tsx                          # Defines the main application layout and navigation.
+│       ├── index.css                        # Contains global frontend styles.
+│       │
+│       ├── components/
+│       │   ├── Header.tsx                   # Displays the application header and title.
+│       │   ├── ModeSelector.tsx             # Allows switching between image, video, and camera modes.
+│       │   ├── ImageUploader.tsx             # Provides the image upload interface.
+│       │   ├── VideoUploader.tsx             # Provides the video upload interface.
+│       │   ├── CameraViewer.tsx              # Displays and controls the live camera stream.
+│       │   ├── ImageViewer.tsx               # Displays processed images and AI annotations.
+│       │   ├── VideoViewer.tsx               # Displays processed video results.
+│       │   ├── DetectionOverlay.tsx          # Renders detection bounding boxes and labels.
+│       │   ├── SegmentationOverlay.tsx       # Renders segmentation masks over input frames.
+│       │   ├── InferenceStats.tsx             # Displays confidence, FPS, latency, and object counts.
+│       │   └── LoadingIndicator.tsx          # Displays inference and processing status.
+│       │
+│       ├── pages/
+│       │   └── EndoscopyDashboard.tsx       # Contains the main endoscopy analysis interface.
+│       │
+│       ├── services/
+│       │   ├── api.ts                       # Configures communication between React and FastAPI.
+│       │   ├── imageApi.ts                  # Sends image prediction requests to the backend.
+│       │   ├── videoApi.ts                  # Sends video processing requests to the backend.
+│       │   └── liveSocket.ts                # Manages the WebSocket connection for live inference.
+│       │
+│       ├── types/
+│       │   └── prediction.ts                # Defines TypeScript types for AI prediction results.
+│       │
+│       └── utils/
+│           ├── canvas.ts                    # Provides utilities for rendering AI results on canvas.
+│           └── format.ts                    # Provides utilities for formatting metrics and inference data.
+│
+│
+├── training/
+│   ├── README.md
+│   │
+│   ├── requirements.txt
+│   │
+│   ├── configs/
+│   │   ├── detection.yaml                  # Stores detection training configuration and hyperparameters.
+│   │   └── segmentation.yaml               # Stores segmentation training configuration and hyperparameters.
+│   │
+│   ├── data/
+│   │   ├── README.md                       # Explains how datasets should be downloaded and prepared.
+│   │   ├── raw/
+│   │   │   └── .gitkeep                    # Placeholder for original downloaded datasets.
+│   │   └── processed/
+│   │       └── .gitkeep                    # Placeholder for preprocessed training data.
+│   │
+│   ├── detection/
+│   │   ├── train.py                        # Trains the polyp detection model.
+│   │   ├── validate.py                     # Evaluates the trained detection model.
+│   │   └── predict.py                      # Runs detection inference during model experiments.
+│   │
+│   ├── segmentation/
+│   │   ├── train.py                        # Trains the polyp segmentation model.
+│   │   ├── validate.py                     # Evaluates segmentation performance using segmentation metrics.
+│   │   └── predict.py                      # Runs segmentation inference during model experiments.
+│   │
+│   ├── preprocessing/
+│   │   ├── prepare_detection.py            # Converts raw annotations into the detection training format.
+│   │   ├── prepare_segmentation.py         # Prepares images and masks for segmentation training.
+│   │   └── augmentations.py                # Defines training image and mask augmentation techniques.
+│   │
+│   ├── evaluation/
+│   │   ├── detection_metrics.py            # Calculates detection metrics such as mAP, precision, and recall.
+│   │   ├── segmentation_metrics.py         # Calculates Dice, IoU, precision, and recall for segmentation.
+│   │   └── benchmark.py                    # Measures inference latency, FPS, and resource performance.
+│   │
+│   └── experiments/
+│       └── .gitkeep                         # Stores experiment results and configurations.
+│
+│
+├── models/
+│   ├── README.md                            # Explains where trained production model weights should be placed.
+│   ├── detector/
+│   │   └── .gitkeep                         # Placeholder for the trained detection model weights.
+│   └── segmenter/
+│       └── .gitkeep                         # Placeholder for the trained segmentation model weights.
+│
+│
+├── tests/
+│   ├── backend/
+│   │   ├── test_health.py                   # Tests the FastAPI health endpoint.
+│   │   ├── test_image.py                    # Tests image inference API behavior.
+│   │   └── test_video.py                    # Tests video inference API behavior.
+│   │
+│   └── ai/
+│       ├── test_detector.py                 # Tests detector loading and prediction output.
+│       └── test_segmenter.py                # Tests segmenter loading and prediction output.
+│
+│
+└── docs/
+    ├── architecture.md                      # Documents the complete system architecture.
+    ├── api.md                               # Documents all backend API endpoints and response formats.
+    ├── training.md                          # Documents dataset preparation and model training procedures.
+    └── deployment.md                        # Documents how to build and deploy the complete application.
