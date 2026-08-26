@@ -1,0 +1,9 @@
+ENDO-X YOLO Detection Model
+===========================
+
+Production model: YOLO12m
+Training run: YOLO12m
+Task: Polyp Object Detection
+Dataset: Kvasir-SEG
+Classes: 1
+Class 0: polyp
