@@ -1,0 +1,83 @@
+{
+  "config": {
+    "dataset_sources": {
+      "PolypDB": "/kaggle/input/datasets/debeshjha1/polypdb/PolypDB/PolypDB/PolypDB_modality_wise",
+      "kvasir-SEG": "/kaggle/input/datasets/debeshjha1/kvasirseg/Kvasir-SEG/Kvasir-SEG"
+    },
+    "output_root": "outputs",
+    "image_size": 256,
+    "batch_size": 16,
+    "num_workers": 4,
+    "train_ratio": 0.7,
+    "val_ratio": 0.15,
+    "test_ratio": 0.15,
+    "epochs": 100,
+    "learning_rate": 0.0001,
+    "weight_decay": 1e-5,
+    "loss_name": "bce_dice",
+    "early_stopping_patience": 18,
+    "encoder_name": "resnet34",
+    "encoder_weights": "imagenet",
+    "in_channels": 3,
+    "out_channels": 1,
+    "primary_metric": "dice",
+    "binarization_threshold": 0.5,
+    "num_vis_samples": 6,
+    "random_seed": 42,
+    "device": "cuda"
+  },
+  "best_epoch": 56,
+  "best_val_metric": 0.900573786268843,
+  "total_training_time_min": 67.33973606030146,
+  "test_metrics": {
+    "dice": 0.9013860214818175,
+    "iou": 0.8465947615706497,
+    "precision": 0.9201451004550966,
+    "recall": 0.9045999838948208
+  },
+  "test_metrics_per_source": [
+    {
+      "source": "PolypDB_BLI",
+      "dice": 0.7775630905121491,
+      "iou": 0.7002893181991046,
+      "precision": 0.7994472155257679,
+      "recall": 0.7996460016189568
+    },
+    {
+      "source": "PolypDB_FICE",
+      "dice": 0.7981203624218278,
+      "iou": 0.7239834900451134,
+      "precision": 0.8440424672239366,
+      "recall": 0.7904936586363542
+    },
+    {
+      "source": "PolypDB_LCI",
+      "dice": 0.8347697009642919,
+      "iou": 0.7648858179648718,
+      "precision": 0.9040925800800323,
+      "recall": 0.8589131484429041
+    },
+    {
+      "source": "PolypDB_NBI",
+      "dice": 0.8779411478476091,
+      "iou": 0.805274559692903,
+      "precision": 0.9105658233165741,
+      "recall": 0.8773763003674421
+    },
+    {
+      "source": "PolypDB_WLI",
+      "dice": 0.9041829476712191,
+      "iou": 0.8505199477239767,
+      "precision": 0.9190939874918019,
+      "recall": 0.9073188863551267
+    },
+    {
+      "source": "kvasir-SEG",
+      "dice": 0.9155841204855177,
+      "iou": 0.8634374419848124,
+      "precision": 0.939441943499777,
+      "recall": 0.9182620268315077
+    }
+  ],
+  "best_checkpoint": "outputs/unet/checkpoints/best_model.pth"
+}
