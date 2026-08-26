@@ -1,0 +1,3 @@
+YOLOv9s: yolov9s.pt
+YOLOv10s: yolov10s.pt
+YOLO11s: yolo11s.pt
