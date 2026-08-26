@@ -1,0 +1,8 @@
+path: ../dataset_strict  
+train: images/train
+val: images/val
+test: images/test   # مجلد الاختبار الخفي غير المرئي للتدريب
+
+nc: 1
+names:
+  0: polyp

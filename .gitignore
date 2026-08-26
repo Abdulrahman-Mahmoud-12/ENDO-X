@@ -1,0 +1,130 @@
+# ===========================
+# ENDO-X .gitignore
+# ===========================
+
+# ---------------------------
+# Datasets & Raw Images
+# ---------------------------
+# Ignore massive datasets and raw images
+data/
+
+# ---------------------------
+# Python
+# ---------------------------
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+ENV/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+*.whl
+
+# ---------------------------
+# Environment & Secrets
+# ---------------------------
+# Environment variables / API keys / credentials
+.env
+.env.*
+*.pem
+*.key
+*.secret
+
+# ---------------------------
+# Jupyter Notebook
+# ---------------------------
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# ---------------------------
+# IDE & Editor Settings
+# ---------------------------
+# VS Code
+.vscode/
+
+# PyCharm / JetBrains
+.idea/
+*.iml
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ---------------------------
+# OS Generated Files
+# ---------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+
+# ---------------------------
+# ML / Training Artifacts
+# ---------------------------
+# Model weights (large binary files)
+*.pt
+*.pth
+*.onnx
+*.torchscript
+*.tflite
+*.mlmodel
+*.h5
+*.hdf5
+*.pkl
+*.joblib
+
+# YOLO training runs / outputs
+runs/
+wandb/
+mlruns/
+
+# TensorBoard logs
+logs/
+tb_logs/
+
+# ---------------------------
+# Large Media & Archives
+# ---------------------------
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# ---------------------------
+# Misc
+# ---------------------------
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+
+# pytest
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+
+# Ruff / linting
+.ruff_cache/
