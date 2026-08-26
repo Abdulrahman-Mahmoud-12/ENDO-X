@@ -1,0 +1,17 @@
+# Path to the dataset root folder.
+# IMPORTANT: this path is resolved relative to THIS file's location
+# (training/configs/detection.yaml), not the repo root. Since the actual
+# image/label dataset is too large to store in Git, set this to wherever
+# you've placed the dataset on your own machine — an absolute path is
+# often simplest, e.g.:
+#   path: C:/Users/yourname/Datasets/YOLO_Dataset_Strict
+path: ../../dataset_strict
+
+train: images/train
+val: images/val
+test: images/test   # hidden test set, not used during training
+
+# Number of classes
+nc: 1
+names:
+  0: polyp
