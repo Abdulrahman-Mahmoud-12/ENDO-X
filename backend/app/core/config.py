@@ -16,6 +16,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 logger = logging.getLogger(__name__)
 
+BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 
 class Settings(BaseSettings):
     """Strongly typed application settings.
@@ -49,15 +50,16 @@ class Settings(BaseSettings):
     device: str = "auto"
 
     # --- Model weights -------------------------------------------------
-    detector_model_path: Path = Path("models/detector/best.pt")
-    segmenter_model_path: Path = Path("models/segmenter/best.pth")
+    detector_model_path: Path = BASE_DIR / "models" / "detector" / "best.pt"
+    segmenter_model_path: Path = BASE_DIR / "models" / "segmenter" / "best.pth"
     segmenter_encoder_name: str = "resnet34"
-    segmenter_architecture: str = "unetplusplus"
+    segmenter_architecture: str = "unet"
+    segmenter_image_size: int = 256
 
     # --- Inference thresholds ------------------------------------------
-    detection_confidence_threshold: float = Field(default=0.25, ge=0.0, le=1.0)
-    detection_iou_threshold: float = Field(default=0.45, ge=0.0, le=1.0)
-    segmentation_mask_threshold: float = Field(default=0.5, ge=0.0, le=1.0)
+    detection_confidence_threshold: float = Field(default=0.2, ge=0.0, le=1.0)
+    detection_iou_threshold: float = Field(default=0.4, ge=0.0, le=1.0)
+    segmentation_mask_threshold: float = Field(default=0.4, ge=0.0, le=1.0)
     detection_roi_margin: float = Field(default=0.15, ge=0.0, le=1.0)
 
     # --- Tracking ------------------------------------------------------
