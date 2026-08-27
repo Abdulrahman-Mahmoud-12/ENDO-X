@@ -6,11 +6,14 @@ from __future__ import annotations
 import logging
 
 from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 
 from app.api.router import api_router
 from app.core.config import get_settings
+from app.core.exceptions import InvalidFileTypeError
 from app.core.lifespan import lifespan
 
 
@@ -45,6 +48,19 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    @app.exception_handler(InvalidFileTypeError)
+    async def invalid_file_type_exception_handler(
+        request: Request, exc: InvalidFileTypeError
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={
+                "status": "error",
+                "error_code": "invalid_file_type",
+                "detail": str(exc),
+            },
+        )
 
     app.include_router(api_router)
 

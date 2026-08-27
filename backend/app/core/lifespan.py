@@ -2,14 +2,6 @@
 
 Loads the trained detector and segmenter exactly once when the application
 starts (never per-request), and releases resources on shutdown.
-
-NOTE: the actual model wrapper classes (``PolypDetector`` / ``PolypSegmenter``)
-are implemented in Phase 1 (``app/models/detector.py`` and
-``app/models/segmenter.py``). This phase wires the loading *lifecycle* —
-device resolution, weight-file validation, timing, and app.state population —
-so every later phase has a stable place to plug the real model classes into.
-Until Phase 1 lands, ``app.state.detector`` / ``app.state.segmenter`` stay
-``None`` and the health endpoint reports them as ``not_loaded``.
 """
 
 from __future__ import annotations

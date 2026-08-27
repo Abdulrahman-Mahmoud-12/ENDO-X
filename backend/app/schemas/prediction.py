@@ -99,3 +99,33 @@ class ErrorResponse(BaseModel):
     """Standard error payload returned by API exception handlers."""
 
     detail: str
+
+
+class DetectionOut(BaseModel):
+    """Wire-shape detection for POST /api/v1/predict/image."""
+
+    class_name: str = Field(alias="class")
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    bbox: list[float] = Field(..., description="[x_min, y_min, x_max, y_max]")
+
+    model_config = {"populate_by_name": True}
+
+
+class SegmentationOut(BaseModel):
+    """Wire-shape segmentation for POST /api/v1/predict/image."""
+
+    detection_index: int
+    mask_area_px: int = Field(..., ge=0)
+    polygon: list[list[float]] = Field(
+        default_factory=list, description="Largest external contour, as [[x, y], ...]"
+    )
+
+
+class ImagePredictionAPIResponse(BaseModel):
+    """Top-level wire shape for POST /api/v1/predict/image."""
+
+    status: str = "success"
+    detections: list[DetectionOut] = Field(default_factory=list)
+    segmentations: list[SegmentationOut] = Field(default_factory=list)
+    overlay_image_url: str | None = None
+    inference_time_ms: float = Field(..., ge=0.0)
