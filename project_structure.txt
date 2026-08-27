@@ -18,7 +18,7 @@ ENDO-X/
 │       │   ├── __init__.py                                  [x]
 │       │   ├── config.py                                    [x]   # Settings: paths, device, thresholds, CORS
 │       │   ├── logging.py                                   [ ]
-│       │   ├── exceptions.py                                [ ]   # not in original plan — see note below
+│       │   ├── exceptions.py                                [x]   # not in original plan — see note below
 │       │   └── lifespan.py                                  [~]   # skeleton only; real model loading = Phase 1
 │       │
 │       ├── domain/                                          [ ]   # NEW — added for modularity, build in Phase 1
@@ -34,7 +34,7 @@ ENDO-X/
 │       │   └── v1/
 │       │       ├── __init__.py                              [x]
 │       │       ├── health.py                                [x]   # reports app.state model status
-│       │       ├── image.py                                 [ ]   # Phase 2
+│       │       ├── image.py                                 [x]   # Phase 2
 │       │       ├── video.py                                 [ ]   # Phase 3
 │       │       └── live.py                                  [ ]   # Phase 4
 │       │
@@ -51,21 +51,21 @@ ENDO-X/
 │       │   └── tracker.py                                   [ ]   # Phase 3 — ByteTrack/BoT-SORT wrapper
 │       │
 │       ├── services/
-│       │   ├── __init__.py                                  [ ]   # Phase 1
+│       │   ├── __init__.py                                  [x]   # Phase 1
 │       │   ├── preprocessing_service.py                     [x]   # Phase 1
-│       │   ├── inference_service.py                         [ ]   # Phase 2
-│       │   ├── image_service.py                              [ ]   # Phase 2
-│       │   ├── video_service.py                              [ ]   # Phase 3
-│       │   └── live_service.py                                [ ]   # Phase 4
+│       │   ├── inference_service.py                         [x]   # Phase 2
+│       │   ├── image_service.py                             [x]   # Phase 2
+│       │   ├── video_service.py                             [ ]   # Phase 3
+│       │   └── live_service.py                              [ ]   # Phase 4
 │       │
 │       ├── utils/
-│       │   ├── __init__.py                                  [ ]   # Phase 1
-│       │   ├── image.py                                      [x]   # Phase 1 — decode/resize/crop-by-bbox
-│       │   ├── visualization.py                              [ ]   # Phase 2 — draw boxes/masks/labels
-│       │   └── video.py                                       [ ]   # Phase 3 — frame extraction/writer, FPS
+│       │   ├── __init__.py                                  [x]   # Phase 1
+│       │   ├── image.py                                     [x]   # Phase 1 — decode/resize/crop-by-bbox
+│       │   ├── visualization.py                             [x]   # Phase 2 — draw boxes/masks/labels
+│       │   └── video.py                                     [ ]   # Phase 3 — frame extraction/writer, FPS
 │       │
 │       └── storage/
-│           ├── .gitkeep                                     [x]
+│           ├── .gitkeep                                      [x]
 │           ├── uploads/.gitkeep                              [x]
 │           └── outputs/.gitkeep                              [x]
 │
@@ -148,19 +148,19 @@ ENDO-X/
 │       └── .gitkeep                        # (unchanged from original — Kvasir-SEG/PolypDB
 │                                                                      #  train/validate/predict scripts, configs)
 │
-├── models/                                                  [ ]
+├── models/                                                  [x]
 │   ├── detector/                                                  # place trained .pt weights here
 │   └── segmenter/                                                 # place trained .pth weights here
 │
 ├── tests/
 │   ├── backend/
-│   │   ├── test_health.py                                  [ ]   # NOT YET IMPLEMENTED — do this first, see below
-│   │   ├── test_image.py                                    [ ]   # Phase 2
-│   │   └── test_video.py                                     [ ]   # Phase 3
+│   │   ├── test_health.py                                   [x]   # NOT YET IMPLEMENTED — do this first, see below
+│   │   ├── test_image.py                                    [x]   # Phase 2
+│   │   └── test_video.py                                    [ ]   # Phase 3
 │   │
 │   └── ai/
-│       ├── test_detector.py                                 [ ]   # Phase 1
-│       └── test_segmenter.py                                 [ ]   # Phase 1
+│       ├── test_detector.py                                 [x]   # Phase 1
+│       └── test_segmenter.py                                [x]   # Phase 1
 │
 └── docs/                                                    [ ]   # Phase 6
     ├── architecture.md
