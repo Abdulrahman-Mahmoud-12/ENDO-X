@@ -1,3 +1,6 @@
 YOLOv8n: yolov8n.pt
 YOLO12m-2: yolo12m.pt
 YOLO26m-2: yolo26m.pt
+YOLOv9s: yolov9s.pt
+YOLOv10s: yolov10s.pt
+YOLO11s: yolo11s.pt
