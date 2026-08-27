@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+env/
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# Model weights (large binary artifacts, not checked in)
+models/detector/*
+models/segmenter/*
+!models/detector/.gitkeep
+!models/segmenter/.gitkeep
+training/data/raw/*
+training/data/processed/*
+!training/data/raw/.gitkeep
+!training/data/processed/.gitkeep
+
+# Runtime storage
+backend/app/storage/uploads/*
+backend/app/storage/outputs/*
+!backend/app/storage/uploads/.gitkeep
+!backend/app/storage/outputs/.gitkeep
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Docker
+docker-compose.override.yml

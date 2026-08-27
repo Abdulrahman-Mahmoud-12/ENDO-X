@@ -1,0 +1,27 @@
+# --- Web framework ---
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+python-multipart==0.0.19
+websockets==14.1
+pydantic==2.10.4
+pydantic-settings==2.7.0
+
+# --- Deep learning ---
+torch==2.5.1
+torchvision==0.20.1
+ultralytics==8.3.49
+segmentation-models-pytorch==0.4.0
+albumentations==1.4.0       # training-time transforms (Resize, Normalize, ToTensorV2)
+
+# --- Computer vision / IO ---
+opencv-python-headless==4.10.0.84
+numpy==1.26.4
+pillow==11.0.0
+aiofiles==24.1.0
+
+# --- Utilities ---
+python-dotenv==1.0.1
+
+# --- Tests ---
+pytest
+httpx                 # required by fastapi.testclient.TestClient (Starlette dependency)
