@@ -76,6 +76,31 @@ class InferenceError(APIError):
     error_code = "inference_error"
 
 
+class UnsupportedVideoFormatError(APIError):
+    """Video extension isn't allowed, OR OpenCV couldn't open/decode it
+    despite an allowed extension (e.g. an unsupported codec inside an
+    .mp4 container)."""
+
+    status_code = status.HTTP_400_BAD_REQUEST
+    error_code = "unsupported_video_format"
+
+
+class CorruptVideoError(APIError):
+    """Video file is corrupt or empty and cannot be processed."""
+
+    status_code = status.HTTP_400_BAD_REQUEST
+    error_code = "corrupt_video"
+
+
+class JobNotFoundError(APIError):
+    """GET /predict/video/{job_id} referenced a job_id that doesn't exist
+    (never submitted, or the process restarted — see video_service.py's
+    note on the in-memory job store)."""
+
+    status_code = status.HTTP_404_NOT_FOUND
+    error_code = "job_not_found"
+
+
 async def _api_error_handler(request: Request, exc: APIError) -> JSONResponse:
     logger.warning(
         "APIError on %s %s: [%s] %s", request.method, request.url.path, exc.error_code, exc.message
@@ -100,4 +125,4 @@ def register_exception_handlers(app: FastAPI) -> None:
     shared JSON error shape. Call once from main.py's ``create_app()``.
     """
     app.add_exception_handler(APIError, _api_error_handler)
-    app.add_exception_handler(Exception, _unhandled_exception_handler)
+    app.add_exception_handler(Exception, _unhandled_exception_handler)

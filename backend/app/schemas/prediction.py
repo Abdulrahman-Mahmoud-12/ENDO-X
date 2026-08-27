@@ -129,3 +129,23 @@ class ImagePredictionAPIResponse(BaseModel):
     segmentations: list[SegmentationOut] = Field(default_factory=list)
     overlay_image_url: str | None = None
     inference_time_ms: float = Field(..., ge=0.0)
+
+
+class VideoSummary(BaseModel):
+    """Nested "summary" object in the video prediction wire response."""
+
+    total_frames: int = Field(..., ge=0)
+    frames_with_polyp: int = Field(..., ge=0)
+    avg_fps: float = Field(..., ge=0.0)
+    avg_latency_ms: float = Field(..., ge=0.0)
+
+
+class VideoPredictionAPIResponse(BaseModel):
+    """Top-level wire shape once a video job finishes successfully —
+    matches your specified response shape exactly."""
+
+    status: str = "success"
+    output_video_url: str
+    summary: VideoSummary
+
+

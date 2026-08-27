@@ -20,8 +20,16 @@ from app.utils.image import compute_crop_region
 
 logger = logging.getLogger(__name__)
 
-_BOX_COLOR = (0, 255, 0)  # RGB
-_MASK_COLOR = (255, 64, 64)  # RGB
+_BOX_COLOR = (255, 0, 0)  # RGB
+
+# Segmentation contour/tint color. Cyan (not red/pink) so it reads clearly
+# against GI tissue tones and doesn't visually suggest "bleeding" or
+# "danger" the way a red overlay would. High-contrast, low-ambiguity color
+# choices like this are standard practice for clinical AI overlays.
+_CONTOUR_COLOR = (0, 255, 255)  # RGB, cyan
+_CONTOUR_THICKNESS = 2
+_FILL_COLOR = _CONTOUR_COLOR
+_FILL_ALPHA = 0.2  # light tint — low enough that tissue underneath stays visible
 
 
 def draw_detections(image: np.ndarray, detections: list[Detection]) -> np.ndarray:
@@ -59,9 +67,18 @@ def draw_segmentation_overlay(
     detections: list[Detection],
     segmentations: list[SegmentationMask],
     settings: Settings,
-    alpha: float = 0.45,
+    alpha: float = _FILL_ALPHA,
 ) -> np.ndarray:
-    """Alpha-blend each mask back onto the full image at its detection's crop region.
+    """Outline each mask's boundary with a solid contour and lightly tint its interior.
+
+    Previously this fully recolored every mask pixel and alpha-blended the
+    whole thing at 0.45 — heavy enough to obscure the tissue underneath,
+    which defeats the point of a clinical review overlay (the reviewer
+    needs to see the actual polyp, not just a colored blob standing in for
+    it). Now: a solid ``_CONTOUR_COLOR`` line traces the segmentation
+    boundary (via ``cv2.findContours`` + ``cv2.drawContours``), and only a
+    light ``_FILL_ALPHA``-opacity tint fills the interior, so tissue detail
+    stays visible through it.
 
     Each ``SegmentationMask`` is sized to its *expanded* crop (detection
     bbox + ``settings.detection_roi_margin``, per ``pipeline/base_pipeline.py``)
@@ -70,7 +87,6 @@ def draw_segmentation_overlay(
     ever changes, update this alongside it.
     """
     annotated = image.copy()
-    overlay = image.copy()
 
     for segmentation in segmentations:
         if segmentation.detection_index >= len(detections) or segmentation.detection_index < 0:
@@ -95,14 +111,30 @@ def draw_segmentation_overlay(
         if mask.shape != (region_h, region_w):
             mask = cv2.resize(mask, (region_w, region_h), interpolation=cv2.INTER_NEAREST)
 
-        region = overlay[y_min:y_max, x_min:x_max]
-        colored = np.zeros_like(region)
-        colored[:] = _MASK_COLOR
-        mask_bool = mask > 0
-        region[mask_bool] = colored[mask_bool]
-        overlay[y_min:y_max, x_min:x_max] = region
+        # Contours are found in the crop's local coordinate space (mask is
+        # already cropped to the region), so they need shifting by
+        # (x_min, y_min) — via drawContours' `offset` arg — whenever they're
+        # drawn onto the full-size `annotated` image.
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if not contours:
+            continue
 
-    cv2.addWeighted(overlay, alpha, annotated, 1 - alpha, 0, dst=annotated)
+        # Light interior tint: filled contours drawn into a small
+        # region-sized buffer, then alpha-blended back only over that
+        # region — cheaper than blending the whole image, and the low
+        # alpha keeps tissue detail visible underneath.
+        region = annotated[y_min:y_max, x_min:x_max]
+        fill_layer = region.copy()
+        cv2.drawContours(fill_layer, contours, -1, _FILL_COLOR, thickness=cv2.FILLED)
+        cv2.addWeighted(fill_layer, alpha, region, 1 - alpha, 0, dst=region)
+        annotated[y_min:y_max, x_min:x_max] = region
+
+        # Solid boundary line, drawn at full opacity on top of the tint so
+        # the contour itself stays crisp instead of also being alpha-blended.
+        cv2.drawContours(
+            annotated, contours, -1, _CONTOUR_COLOR, thickness=_CONTOUR_THICKNESS, offset=(x_min, y_min)
+        )
+
     return annotated
 
 

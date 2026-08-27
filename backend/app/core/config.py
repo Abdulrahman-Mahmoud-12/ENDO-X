@@ -62,9 +62,6 @@ class Settings(BaseSettings):
     segmentation_mask_threshold: float = Field(default=0.4, ge=0.0, le=1.0)
     detection_roi_margin: float = Field(default=0.15, ge=0.0, le=1.0)
 
-    # --- Tracking ------------------------------------------------------
-    tracker_type: str = "bytetrack"
-
     # --- Uploads / storage -----------------------------------------------
     storage_root: Path = Path("app/storage")
     uploads_dir: Path = Path("app/storage/uploads")
