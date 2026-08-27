@@ -1,70 +1,76 @@
-gi-endoscopy-ai/
+ENDO-X/
 │
-├── README.md
-│
-├── .gitignore
-├── .dockerignore
-├── .env.example
-├── docker-compose.yml
+├── README.md                                            [ ]
+├── .gitignore                                            [x]
+├── .dockerignore                                          [x]
+├── .env.example                                          [x]
+├── docker-compose.yml                                     [x]   # backend only; frontend service added Phase 5
 │
 ├── backend/
-│   ├── Dockerfile
-│   ├── requirements.txt
+│   ├── Dockerfile                                          [x]
+│   ├── requirements.txt                                    [x]
 │   │
 │   └── app/
-│       ├── __init__.py
-│       │
-│       ├── main.py                         # Creates the FastAPI application and registers all API routes.
+│       ├── __init__.py                                     [x]
+│       ├── main.py                                          [x]   # create_app(), CORS, router mount, static mount
 │       │
 │       ├── core/
-│       │   ├── __init__.py
-│       │   ├── config.py                   # Loads application settings and environment variables.
-│       │   └── lifespan.py                  # Loads AI models once when the FastAPI application starts.
+│       │   ├── __init__.py                                  [x]
+│       │   ├── config.py                                    [x]   # Settings: paths, device, thresholds, CORS
+│       │   ├── logging.py                                   [ ]
+│       │   ├── exceptions.py                                [ ]   # not in original plan — see note below
+│       │   └── lifespan.py                                  [~]   # skeleton only; real model loading = Phase 1
+│       │
+│       ├── domain/                                          [ ]   # NEW — added for modularity, build in Phase 1
+│       │   └── interfaces/
+│       │       ├── __init__.py
+│       │       ├── detector.py                              [~]    # Protocol: predict(image) -> list[Detection]
+│       │       └── segmenter.py                             [~]    # Protocol: predict(crop) -> SegmentationMask
 │       │
 │       ├── api/
-│       │   ├── __init__.py
-│       │   ├── router.py                   # Combines all API routers into the main API router.
+│       │   ├── __init__.py                                  [x]
+│       │   ├── router.py                                    [x]
 │       │   │
 │       │   └── v1/
-│       │       ├── __init__.py
-│       │       ├── health.py                # Provides API and AI model health-check endpoints.
-│       │       ├── image.py                 # Handles image upload and image inference requests.
-│       │       ├── video.py                 # Handles uploaded video processing requests.
-│       │       └── live.py                  # Provides WebSocket endpoints for live camera inference.
+│       │       ├── __init__.py                              [x]
+│       │       ├── health.py                                [x]   # reports app.state model status
+│       │       ├── image.py                                 [ ]   # Phase 2
+│       │       ├── video.py                                 [ ]   # Phase 3
+│       │       └── live.py                                  [ ]   # Phase 4
 │       │
 │       ├── schemas/
-│       │   ├── __init__.py
-│       │   └── prediction.py                # Defines Pydantic schemas for AI prediction responses.
+│       │   ├── __init__.py                                  [x]
+│       │   └── prediction.py                                [x]   # BoundingBox, Detection, SegmentationMask,
+│       │                                                            # ImagePredictionResponse, VideoPredictionResponse,
+│       │                                                            # TrackedObject, HealthResponse, ErrorResponse
 │       │
 │       ├── models/
-│       │   ├── __init__.py
-│       │   ├── detector.py                  # Loads and runs the trained polyp detection model.
-│       │   ├── segmenter.py                 # Loads and runs the trained polyp segmentation model.
-│       │   └── tracker.py                   # Provides object tracking for video and live inference.
+│       │   ├── __init__.py                                  [ ]   # Phase 1
+│       │   ├── detector.py                                  [x]   # Phase 1 — PolypDetector (YOLO wrapper)
+│       │   ├── segmenter.py                                 [x]   # Phase 1 — PolypSegmenter (U-Net wrapper)
+│       │   └── tracker.py                                   [ ]   # Phase 3 — ByteTrack/BoT-SORT wrapper
 │       │
 │       ├── services/
-│       │   ├── __init__.py
-│       │   ├── inference_service.py         # Coordinates detection, segmentation, and tracking inference.
-│       │   ├── image_service.py             # Processes individual images and prepares inference results.
-│       │   ├── video_service.py             # Processes video frames and creates annotated video output.
-│       │   ├── live_service.py              # Processes live camera frames in real time.
-│       │   └── preprocessing_service.py     # Performs image resizing, normalization, and input preparation.
+│       │   ├── __init__.py                                  [ ]   # Phase 1
+│       │   ├── preprocessing_service.py                     [x]   # Phase 1
+│       │   ├── inference_service.py                         [ ]   # Phase 2
+│       │   ├── image_service.py                              [ ]   # Phase 2
+│       │   ├── video_service.py                              [ ]   # Phase 3
+│       │   └── live_service.py                                [ ]   # Phase 4
 │       │
 │       ├── utils/
-│       │   ├── __init__.py
-│       │   ├── visualization.py             # Draws bounding boxes, masks, labels, and tracking IDs.
-│       │   ├── video.py                     # Contains reusable video and frame-processing utilities.
-│       │   └── image.py                     # Contains reusable image-processing utilities.
+│       │   ├── __init__.py                                  [ ]   # Phase 1
+│       │   ├── image.py                                      [x]   # Phase 1 — decode/resize/crop-by-bbox
+│       │   ├── visualization.py                              [ ]   # Phase 2 — draw boxes/masks/labels
+│       │   └── video.py                                       [ ]   # Phase 3 — frame extraction/writer, FPS
 │       │
 │       └── storage/
-│           ├── .gitkeep
-│           ├── uploads/
-│           │   └── .gitkeep                 # Keeps the directory for temporary uploaded files.
-│           └── outputs/
-│               └── .gitkeep                 # Keeps the directory for generated inference results.
+│           ├── .gitkeep                                     [x]
+│           ├── uploads/.gitkeep                              [x]
+│           └── outputs/.gitkeep                              [x]
 │
 │
-├── frontend/
+├── frontend/                                                [ ]   # entirely Phase 5
 │   ├── Dockerfile
 │   ├── package.json
 │   ├── package-lock.json
@@ -73,38 +79,33 @@ gi-endoscopy-ai/
 │   ├── index.html
 │   │
 │   └── src/
-│       ├── main.tsx                         # Starts the React frontend application.
-│       ├── App.tsx                          # Defines the main application layout and navigation.
-│       ├── index.css                        # Contains global frontend styles.
-│       │
+│       ├── main.tsx
+│       ├── App.tsx
+│       ├── index.css
 │       ├── components/
-│       │   ├── Header.tsx                   # Displays the application header and title.
-│       │   ├── ModeSelector.tsx             # Allows switching between image, video, and camera modes.
-│       │   ├── ImageUploader.tsx             # Provides the image upload interface.
-│       │   ├── VideoUploader.tsx             # Provides the video upload interface.
-│       │   ├── CameraViewer.tsx              # Displays and controls the live camera stream.
-│       │   ├── ImageViewer.tsx               # Displays processed images and AI annotations.
-│       │   ├── VideoViewer.tsx               # Displays processed video results.
-│       │   ├── DetectionOverlay.tsx          # Renders detection bounding boxes and labels.
-│       │   ├── SegmentationOverlay.tsx       # Renders segmentation masks over input frames.
-│       │   ├── InferenceStats.tsx             # Displays confidence, FPS, latency, and object counts.
-│       │   └── LoadingIndicator.tsx          # Displays inference and processing status.
-│       │
+│       │   ├── Header.tsx
+│       │   ├── ModeSelector.tsx
+│       │   ├── ImageUploader.tsx
+│       │   ├── VideoUploader.tsx
+│       │   ├── CameraViewer.tsx
+│       │   ├── ImageViewer.tsx
+│       │   ├── VideoViewer.tsx
+│       │   ├── DetectionOverlay.tsx
+│       │   ├── SegmentationOverlay.tsx
+│       │   ├── InferenceStats.tsx
+│       │   └── LoadingIndicator.tsx
 │       ├── pages/
-│       │   └── EndoscopyDashboard.tsx       # Contains the main endoscopy analysis interface.
-│       │
+│       │   └── EndoscopyDashboard.tsx
 │       ├── services/
-│       │   ├── api.ts                       # Configures communication between React and FastAPI.
-│       │   ├── imageApi.ts                  # Sends image prediction requests to the backend.
-│       │   ├── videoApi.ts                  # Sends video processing requests to the backend.
-│       │   └── liveSocket.ts                # Manages the WebSocket connection for live inference.
-│       │
+│       │   ├── api.ts
+│       │   ├── imageApi.ts
+│       │   ├── videoApi.ts
+│       │   └── liveSocket.ts
 │       ├── types/
-│       │   └── prediction.ts                # Defines TypeScript types for AI prediction results.
-│       │
+│       │   └── prediction.ts
 │       └── utils/
-│           ├── canvas.ts                    # Provides utilities for rendering AI results on canvas.
-│           └── format.ts                    # Provides utilities for formatting metrics and inference data.
+│           ├── canvas.ts
+│           └── format.ts
 │
 │
 ├── training/
@@ -144,30 +145,25 @@ gi-endoscopy-ai/
 │   │   └── benchmark.py                    # Measures inference latency, FPS, and resource performance.
 │   │
 │   └── experiments/
-│       └── .gitkeep                         # Stores experiment results and configurations.
+│       └── .gitkeep                        # (unchanged from original — Kvasir-SEG/PolypDB
+│                                                                      #  train/validate/predict scripts, configs)
 │
-│
-├── models/
-│   ├── README.md                            # Explains where trained production model weights should be placed.
-│   ├── detector/
-│   │   └── .gitkeep                         # Placeholder for the trained detection model weights.
-│   └── segmenter/
-│       └── .gitkeep                         # Placeholder for the trained segmentation model weights.
-│
+├── models/                                                  [ ]
+│   ├── detector/                                                  # place trained .pt weights here
+│   └── segmenter/                                                 # place trained .pth weights here
 │
 ├── tests/
 │   ├── backend/
-│   │   ├── test_health.py                   # Tests the FastAPI health endpoint.
-│   │   ├── test_image.py                    # Tests image inference API behavior.
-│   │   └── test_video.py                    # Tests video inference API behavior.
+│   │   ├── test_health.py                                  [ ]   # NOT YET IMPLEMENTED — do this first, see below
+│   │   ├── test_image.py                                    [ ]   # Phase 2
+│   │   └── test_video.py                                     [ ]   # Phase 3
 │   │
 │   └── ai/
-│       ├── test_detector.py                 # Tests detector loading and prediction output.
-│       └── test_segmenter.py                # Tests segmenter loading and prediction output.
+│       ├── test_detector.py                                 [ ]   # Phase 1
+│       └── test_segmenter.py                                 [ ]   # Phase 1
 │
-│
-└── docs/
-    ├── architecture.md                      # Documents the complete system architecture.
-    ├── api.md                               # Documents all backend API endpoints and response formats.
-    ├── training.md                          # Documents dataset preparation and model training procedures.
-    └── deployment.md                        # Documents how to build and deploy the complete application.
+└── docs/                                                    [ ]   # Phase 6
+    ├── architecture.md
+    ├── api.md
+    ├── training.md
+    └── deployment.md
