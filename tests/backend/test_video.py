@@ -32,13 +32,13 @@ class FakeDetector:
 
 
 class FakeSegmenter:
-    def predict_crop(self, image_crop: np.ndarray, bbox: BoundingBox) -> SegmentationMask:
-        h, w = max(1, int(bbox.height)), max(1, int(bbox.width))
+    def predict(self, image_crop: np.ndarray, detection_index: int = 0) -> SegmentationMask:
+        h, w = max(1, image_crop.shape[0]), max(1, image_crop.shape[1])
         mask = np.full((h, w), 255, dtype=np.uint8)
         ok, encoded = cv2.imencode(".png", mask)
         assert ok
         return SegmentationMask(
-            detection_index=0,
+            detection_index=detection_index,
             mask_area_pixels=int(h * w),
             mask_encoding=base64.b64encode(encoded.tobytes()).decode("ascii"),
         )

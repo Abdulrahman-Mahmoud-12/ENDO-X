@@ -22,7 +22,7 @@ router = APIRouter()
 )
 async def predict_video(
     file: UploadFile = File(..., description="mp4/avi/mov endoscopy clip"),
-    sample_rate: int = Query(default=1, ge=1, description="Process every Nth frame"),
+    sample_rate: int = Query(default=10, ge=1, description="Run AI inference every Nth frame; skipped frames reuse the last annotation"),
     video_service: VideoService = Depends(get_video_service),
 ) -> VideoPredictionAPIResponse:
     return await video_service.predict_video(file=file, sample_rate=sample_rate)

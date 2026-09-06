@@ -1,4 +1,4 @@
-"""Shared orchestration for any prediction pipeline: detect -> crop -> segment.
+"""Shared orchestration for detection and segmentation pipelines.
 
 Depends only on ``domain/interfaces`` types (``Detector``, ``Segmenter``),
 never on the concrete ``PolypDetector``/``PolypSegmenter`` classes —
@@ -54,13 +54,31 @@ class BasePipeline:
         self.settings = settings or get_settings()
 
     def run_detect_segment(self, image: np.ndarray) -> PipelineResult:
-        """Run detection, then segment every detected region.
+        """Run detection and segmentation according to ``segmentation_mode``.
 
-        A detection whose crop is degenerate (e.g. bbox clipped entirely
-        outside the frame) is kept in ``detections`` but skipped for
-        segmentation, rather than failing the whole request over one bad box.
+        In ``independent`` mode both models receive the same full image and
+        segmentation is still executed when detection returns no boxes.
+        ``detected_regions`` preserves the original crop-based behavior for
+        checkpoints trained specifically on detector crops.
         """
         detections = self.detector.predict(image)
+
+        if self.settings.segmentation_mode == "independent":
+            mask = self.segmenter.predict(image)
+            mask.detection_index = -1
+            return PipelineResult(
+                detections=detections,
+                segmentations=[mask],
+                per_object=[
+                    PerObjectResult(detection=detection, segmentation=None)
+                    for detection in detections
+                ],
+            )
+
+        if self.settings.segmentation_mode != "detected_regions":
+            raise ValueError(
+                "SEGMENTATION_MODE must be 'independent' or 'detected_regions'"
+            )
 
         segmentations: list[SegmentationMask] = []
         per_object: list[PerObjectResult] = []

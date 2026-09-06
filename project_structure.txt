@@ -1,0 +1,31 @@
+ENDO-X/
+├── backend/
+│   ├── app/
+│   │   ├── api/v1/        health, image, video, live WebSocket routes
+│   │   ├── core/          settings, exceptions, application lifespan
+│   │   ├── domain/        detector, segmenter, tracker protocols
+│   │   ├── models/        YOLO, U-Net, and ByteTrack wrappers
+│   │   ├── pipeline/      image/video orchestration
+│   │   ├── schemas/       Pydantic API contracts
+│   │   ├── services/      upload and inference services
+│   │   ├── storage/       runtime mount points
+│   │   └── utils/         media, annotation, and visualization helpers
+│   ├── Dockerfile
+│   └── requirements.txt
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── api/           backend clients
+│   │   ├── components/    active live-camera component
+│   │   └── styles/
+│   ├── package.json
+│   └── package-lock.json
+├── models/                local ignored detector/segmenter weights
+├── tests/                 backend, pipeline, and AI tests
+├── training/              detector training and segmentation inference
+├── app/storage/           local ignored runtime outputs
+├── .env.example
+├── docker-compose.yml
+├── run_backend.bat
+├── run_frontend.bat
+└── README.md

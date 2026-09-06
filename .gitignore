@@ -29,6 +29,13 @@ backend/app/storage/uploads/*
 backend/app/storage/outputs/*
 !backend/app/storage/uploads/.gitkeep
 !backend/app/storage/outputs/.gitkeep
+app/storage/uploads/*
+app/storage/outputs/*
+!app/storage/uploads/.gitkeep
+!app/storage/outputs/.gitkeep
+
+# Frontend build output
+frontend/build/
 
 # Node / frontend
 frontend/node_modules/

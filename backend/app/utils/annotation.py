@@ -92,3 +92,29 @@ def overlay_mask(
     region_out[mask_bool] = blended[mask_bool]
     annotated[y1:y2, x1:x2] = region_out
     return annotated
+
+
+def overlay_full_mask(
+    frame_rgb: np.ndarray,
+    mask: SegmentationMask,
+    alpha: float = 0.4,
+) -> np.ndarray:
+    """Alpha-blend an independently predicted full-frame mask."""
+    png_bytes = base64.b64decode(mask.mask_encoding)
+    mask_img = cv2.imdecode(np.frombuffer(png_bytes, dtype=np.uint8), cv2.IMREAD_GRAYSCALE)
+    if mask_img is None:
+        return frame_rgb
+
+    height, width = frame_rgb.shape[:2]
+    if mask_img.shape[:2] != (height, width):
+        mask_img = cv2.resize(mask_img, (width, height), interpolation=cv2.INTER_NEAREST)
+    mask_bool = mask_img > 0
+    if not mask_bool.any():
+        return frame_rgb
+
+    color_layer = np.zeros_like(frame_rgb)
+    color_layer[:] = _MASK_COLOR
+    blended = cv2.addWeighted(frame_rgb, 1 - alpha, color_layer, alpha, 0)
+    annotated = frame_rgb.copy()
+    annotated[mask_bool] = blended[mask_bool]
+    return annotated

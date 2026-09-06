@@ -7,11 +7,11 @@ from __future__ import annotations
 
 import logging
 import os
-import shutil
 import tempfile
 import uuid
 from pathlib import Path
 
+import numpy as np
 from fastapi import Depends, Request, UploadFile
 
 from app.core.config import Settings, get_settings
@@ -169,6 +169,7 @@ class VideoService:
                     frames_with_polyp=frames_with_polyp,
                     avg_fps=fps_accountant.avg_fps,
                     avg_latency_ms=fps_accountant.avg_latency_ms,
+                    output_fps=fps,
                 ),
             )
 

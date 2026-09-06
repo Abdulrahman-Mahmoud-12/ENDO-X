@@ -52,6 +52,9 @@ def _remap_segmentations(
 ) -> list[SegmentationMask]:
     remapped: list[SegmentationMask] = []
     for seg in segmentations:
+        if seg.detection_index == -1:
+            remapped.append(seg)
+            continue
         if seg.detection_index not in index_map:
             continue
         remapped.append(seg.model_copy(update={"detection_index": index_map[seg.detection_index]}))

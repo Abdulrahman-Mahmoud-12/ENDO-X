@@ -82,6 +82,7 @@ class PolypDetector(Detector):
             source=image,
             conf=settings.detection_confidence_threshold,
             iou=settings.detection_iou_threshold,
+            imgsz=settings.detector_image_size,
             device=self.device,
             verbose=False,
         )

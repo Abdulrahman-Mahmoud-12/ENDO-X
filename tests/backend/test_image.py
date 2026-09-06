@@ -26,7 +26,7 @@ def client():
 
 def _models_available() -> bool:
     settings = get_settings()
-    return settings.detector_model_path.exists() and settings.segmenter_model_path.exists()
+    return settings.detector_model_path.exists() and settings.segmenter_model_path.exists() and FIXTURE_IMAGE.exists()
 
 
 @pytest.mark.skipif(not _models_available(), reason="Trained detector/segmenter weights not present")

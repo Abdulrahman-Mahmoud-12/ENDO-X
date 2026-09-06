@@ -40,9 +40,13 @@ class Detection(BaseModel):
 
 
 class SegmentationMask(BaseModel):
-    """Segmentation result for one detected polyp region."""
+    """Segmentation result for a detected region or the full input image.
 
-    detection_index: int = Field(..., description="Index into the parent detections list")
+    ``detection_index`` is ``-1`` when the segmenter ran independently on
+    the full image rather than on a detector crop.
+    """
+
+    detection_index: int = Field(default=-1, description="Detection index, or -1 for independent full-image segmentation")
     mask_area_pixels: int = Field(..., ge=0)
     mask_encoding: str = Field(
         ...,
@@ -138,6 +142,7 @@ class VideoSummary(BaseModel):
     frames_with_polyp: int = Field(..., ge=0)
     avg_fps: float = Field(..., ge=0.0)
     avg_latency_ms: float = Field(..., ge=0.0)
+    output_fps: float = Field(default=0.0, ge=0.0, description="Playback FPS of the generated output video")
 
 
 class VideoPredictionAPIResponse(BaseModel):
@@ -148,4 +153,4 @@ class VideoPredictionAPIResponse(BaseModel):
     output_video_url: str
     summary: VideoSummary
 
-
+
