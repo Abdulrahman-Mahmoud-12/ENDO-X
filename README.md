@@ -183,7 +183,7 @@ or datasets that you are not authorized to redistribute.
 ### 1. Clone the repository
 
 ```powershell
-git clone <YOUR_GITHUB_REPOSITORY_URL>
+git clone https://github.com/Abdulrahman-Mahmoud-12/ENDO-X
 cd ENDO-X
 ```
 
