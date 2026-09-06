@@ -14,7 +14,11 @@ export const processVideo = async (file, sampleRate = 1) => {
   const data = await res.json();
 
   if (!res.ok || data.status === "error") {
-    throw new Error(data.message || data.detail || `Video processing failed with status ${res.status}`);
+    throw new Error(
+      data.message ||
+        data.detail ||
+        `Video processing failed with status ${res.status}`,
+    );
   }
 
   const summary = data.summary || {};
@@ -28,6 +32,7 @@ export const processVideo = async (file, sampleRate = 1) => {
     total_frames: summary.total_frames || 0,
     frames_with_polyp: summary.frames_with_polyp || 0,
     avg_fps: summary.avg_fps || 0,
+    output_fps: summary.output_fps || 0,
     avg_latency_ms: summary.avg_latency_ms || 0,
   };
 };

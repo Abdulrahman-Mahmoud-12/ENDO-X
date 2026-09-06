@@ -89,6 +89,23 @@ def draw_segmentation_overlay(
     annotated = image.copy()
 
     for segmentation in segmentations:
+        is_full_image_mask = segmentation.detection_index == -1 or (
+            not detections and segmentation.detection_index >= 0
+        )
+        if is_full_image_mask:
+            mask = _decode_mask_png(segmentation.mask_encoding)
+            if mask.shape[:2] != image.shape[:2]:
+                mask = cv2.resize(mask, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_NEAREST)
+            mask_bool = mask > 0
+            if mask_bool.any():
+                region = annotated[mask_bool]
+                color = np.zeros_like(region)
+                color[:] = _FILL_COLOR
+                annotated[mask_bool] = cv2.addWeighted(region, 1 - alpha, color, alpha, 0)
+                contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                cv2.drawContours(annotated, contours, -1, _CONTOUR_COLOR, thickness=_CONTOUR_THICKNESS)
+            continue
+
         if segmentation.detection_index >= len(detections) or segmentation.detection_index < 0:
             logger.warning(
                 "Skipping segmentation with out-of-range detection_index=%s", segmentation.detection_index
@@ -144,7 +161,7 @@ def render_overlay(
     segmentations: list[SegmentationMask],
     settings: Settings,
 ) -> np.ndarray:
-    """Combine the mask overlay and box/label drawing into one annotated image."""
+    """Render segmentation masks together with detector boxes and labels."""
     with_masks = draw_segmentation_overlay(image, detections, segmentations, settings)
     return draw_detections(with_masks, detections)
 

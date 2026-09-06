@@ -1,255 +1,634 @@
-# 🩺 ENDO-X: Intelligent Gastrointestinal Endoscopy Vision System
+# ENDO-X
 
-[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688.svg)](https://fastapi.tiangolo.com/)
-[![React](https://img.shields.io/badge/React-18-61DAFB.svg)](https://reactjs.org/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.5-EE4C2C.svg)](https://pytorch.org/)
-[![Ultralytics YOLO](https://img.shields.io/badge/YOLO-v8%2Fv11-00FFFF.svg)](https://docs.ultralytics.com/)
+<div align="center">
 
-**ENDO-X** is an end-to-end computer vision platform designed for real-time and offline intelligent analysis of gastrointestinal (GI) endoscopy images, video recordings, and live camera streams. Developed as part of the **NTI Summer Training (Computer Vision Track)** graduation project.
+**AI-assisted gastrointestinal endoscopy analysis**
 
-The system combines state-of-the-art deep learning architectures for **polyp object detection**, **pixel-level segmentation**, and **real-time object tracking** with a high-performance **FastAPI backend** and an intuitive **React frontend**.
+Detection, segmentation, tracking, and live camera inference through a FastAPI backend and React frontend.
 
-> ⚠️ **Disclaimer:** *ENDO-X is strictly an educational and research project. It is not intended, certified, or validated for clinical diagnosis or direct medical decision-making.*
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=20232A)](https://react.dev/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.5-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![OpenCV](https://img.shields.io/badge/OpenCV-4.x-5C3EE8?logo=opencv&logoColor=white)](https://opencv.org/)
 
----
+</div>
 
-## 🌟 Key Features
+> **Research and education only.** ENDO-X is not a medical device, is not clinically validated, and must not be used for diagnosis or medical decision-making.
 
-- 📸 **Image Analysis Mode:** Upload single endoscopy images (`.jpg`, `.jpeg`, `.png`) to receive bounding-box polyp detections, pixel-accurate segmentation overlays, confidence scores, and latency metrics.
-- 🎬 **Video Processing Mode:** Upload frame sequences or endoscopy videos (`.mp4`, `.avi`, `.mov`) for frame-by-frame detection, segmentation, and continuous object tracking across frames.
-- 🎥 **Live Camera Inference Mode:** Real-time stream processing over WebSockets directly from a camera device or webcam feed, monitoring latency and live FPS.
-- 🎯 **Dual AI Vision Engine:**
-  - **Object Detection:** YOLO-based detector locating polyps and returning bounding box coordinates and confidence levels.
-  - **Semantic Segmentation:** U-Net / U-Net++ architectures for boundary-level mask extraction of detected polyp regions.
-  - **Multi-Object Tracking:** ByteTrack / BoT-SORT object tracking to maintain persistent polyp IDs across frames.
-- 📊 **Inference & Metrics Dashboard:** Displays real-time FPS, total latency, bounding box statistics, mask area (in pixels), and confidence metrics.
+## Contents
 
----
+- [Overview](#overview)
+- [Capabilities](#capabilities)
+- [Architecture](#architecture)
+- [Repository Structure](#repository-structure)
+- [Requirements](#requirements)
+- [Model Files](#model-files)
+- [Local Installation](#local-installation)
+- [Configuration](#configuration)
+- [Running the Application](#running-the-application)
+- [API Reference](#api-reference)
+- [Inference Behavior](#inference-behavior)
+- [Testing](#testing)
+- [Docker](#docker)
+- [Vercel and ngrok Demonstration Deployment](#vercel-and-ngrok-demonstration-deployment)
+- [Performance](#performance)
+- [Troubleshooting](#troubleshooting)
+- [Security and Privacy](#security-and-privacy)
+- [License and Data](#license-and-data)
 
-## 🏗️ System Architecture
+## Overview
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                      REACT FRONTEND                         │
-│                                                             │
-│  [ Image Mode ]       [ Video Mode ]    [ Live Camera Mode ]│
-│  - Drag & Drop        - Frame Player     - WebCam Stream    │
-│  - Masks & BBoxes     - Video Exporter   - WebSocket Stats  │
-└──────────────────────────┬──────────────────────────────────┘
-                           │
-                    HTTP / WebSocket API
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│                     FASTAPI BACKEND                         │
-│                                                             │
-│  ├── GET  /api/v1/health          (System Readiness)        │
-│  ├── POST /api/v1/predict/image   (Image Inference)         │
-│  ├── POST /api/v1/predict/video   (Video Processing)        │
-│  └── WS   /api/v1/predict/live    (Real-time Streams)       │
-└───────────────┬──────────────────────┬──────────────────────┘
-                │                      │
-                ▼                      ▼
-┌─────────────────────────┐   ┌──────────────────────────────┐
-│     INFERENCE ENGINE    │   │      UTILITIES & STORAGE     │
-│  - YOLO Object Detector │   │  - Pre/Post Processing       │
-│  - U-Net Segmenter      │   │  - Frame Extraction          │
-│  - Object Tracker       │   │  - Uploads & Outputs Storage │
-└─────────────────────────┘   └──────────────────────────────┘
+ENDO-X is a modular computer-vision prototype for analyzing gastrointestinal endoscopy images and videos. It combines two AI models:
+
+- **Object detection:** a YOLO checkpoint predicts polyp bounding boxes and confidence scores.
+- **Semantic segmentation:** a U-Net checkpoint predicts the pixel region belonging to a polyp.
+- **Tracking:** ByteTrack, when installed and available, maintains object IDs across video and live frames.
+
+The application has three frontend modes:
+
+1. **Image:** upload one image and receive detections, segmentation masks, an annotated image, and latency.
+2. **Video:** upload a video and receive an annotated output video and processing summary.
+3. **Live:** stream browser camera JPEG frames to the backend over WebSocket and receive annotated frames and telemetry.
+
+## Capabilities
+
+### Image analysis
+
+- Supported extensions: `.jpg`, `.jpeg`, `.png`
+- Maximum default size: 15 MB
+- Returns detection boxes, confidences, segmentation polygons, mask area, overlay URL, and inference time.
+
+### Video analysis
+
+- Supported extensions: `.mp4`, `.avi`, `.mov`
+- Maximum default size: 250 MB
+- Processes every tenth frame by default to keep CPU inference usable.
+- Reuses the last annotation on skipped frames.
+- Preserves the source playback FPS in the generated output.
+- Writes generated media to the runtime output directory.
+
+### Live camera analysis
+
+- Uses browser camera permission through `getUserMedia`.
+- Sends JPEG frames through `/api/v1/predict/live`.
+- Returns a base64-encoded annotated JPEG, detections, track IDs, FPS, and latency.
+- HTTPS is required by browsers when the frontend is not running on localhost.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    UI[React frontend] -->|HTTP| API[FastAPI API]
+    UI -->|WebSocket| LIVE[Live endpoint]
+    API --> IMG[Image service]
+    API --> VID[Video service]
+    LIVE --> VP[Video pipeline]
+    IMG --> IP[Image pipeline]
+    VID --> VP
+    IP --> DET[YOLO detector]
+    IP --> SEG[U-Net segmenter]
+    VP --> DET
+    VP --> SEG
+    VP --> TRK[ByteTrack or fallback tracker]
+    API --> STORE[Runtime storage]
 ```
 
----
+### Inference flow
 
-## 📂 Project Structure
+```text
+Input image/frame
+      |
+      +--> YOLO detector --------------------> detections and boxes
+      |
+      +--> U-Net segmenter ------------------> mask and contour
+      |
+      +--> tracker for video/live -----------> persistent IDs
+      |
+      +--> visualization --------------------> annotated output
+```
+
+Detection and segmentation are configurable. In the default `independent` mode, both models receive the same full image. In `detected_regions` mode, segmentation receives a crop for each detector box.
+
+## Repository Structure
 
 ```text
 ENDO-X/
-├── backend/                  # FastAPI Application
+├── backend/
 │   ├── app/
-│   │   ├── api/              # V1 API endpoints (health, image, video, live)
-│   │   ├── core/             # Configuration & lifespan settings
-│   │   ├── models/           # YOLO Detector, U-Net Segmenter & Tracker wrappers
-│   │   ├── pipeline/         # Image & Video processing pipelines
-│   │   ├── schemas/          # Pydantic data models & request/response types
-│   │   ├── services/         # Preprocessing, inference & media services
-│   │   └── utils/            # Image/video decoding, resizing & visualizers
+│   │   ├── api/v1/              Health, image, video, and live routes
+│   │   ├── core/                Settings, exceptions, and startup lifecycle
+│   │   ├── domain/interfaces/   Detector, segmenter, and tracker protocols
+│   │   ├── models/              YOLO, U-Net, and ByteTrack wrappers
+│   │   ├── pipeline/            Image and video orchestration
+│   │   ├── schemas/             Pydantic request/response models
+│   │   ├── services/            Upload, inference, image, and video services
+│   │   ├── storage/             Backend runtime storage mount points
+│   │   └── utils/               Image, video, annotation, and visualization code
 │   ├── Dockerfile
-│   └── requirements.txt      # Python dependencies
-│
-├── frontend/                 # React Web Application
-│   ├── public/               # Static assets & index.html
+│   ├── .dockerignore
+│   └── requirements.txt
+├── frontend/
+│   ├── public/
 │   ├── src/
-│   │   ├── api/              # Axios & WebSocket client connections
-│   │   ├── components/       # Header, VideoPlayer, ImageResults, UI elements
-│   │   ├── pages/            # ImageAnalysis & VideoStream pages
-│   │   └── styles/           # CSS & color theme definitions
-│   └── package.json
-│
-├── models/                   # Model Weights Storage
-│   ├── detector/             # YOLO detector weights (e.g., best.pt)
-│   └── segmenter/            # U-Net segmenter weights (e.g., best.pth)
-│
-├── training/                 # Model Training & Evaluation Scripts
-│   ├── configs/              # Hyperparameter YAML configs
-│   ├── detection/            # Detector training & validation scripts
-│   ├── segmentation/         # Segmenter training & validation scripts
-│   └── evaluation/           # mAP, Dice, IoU & benchmark scripts
-│
-├── run_backend.bat           # Windows startup script for backend
-├── run_frontend.bat          # Windows startup script for frontend
-├── .env.example              # Environment variables template
-├── projext_overview.md       # Detailed technical design document
+│   │   ├── api/                 Backend clients
+│   │   ├── components/          Active live-camera component
+│   │   └── styles/
+│   ├── package.json
+│   └── package-lock.json
+├── models/                      Local ignored model weights
+├── tests/                       Backend, pipeline, and model tests
+├── training/                    Detector training and segmentation helper scripts
+├── app/storage/                 Local ignored uploads and generated outputs
+├── .env.example                 Public configuration template
+├── docker-compose.yml
+├── run_backend.bat
+├── run_frontend.bat
 └── README.md
 ```
 
----
+## Requirements
 
-## 🛠️ Technology Stack
+- Python 3.10 or newer
+- Node.js 18 or newer
+- npm
+- Git
+- Optional: NVIDIA GPU and CUDA-compatible PyTorch for faster inference
+- Optional: Docker Desktop for containerized backend development
 
-| Domain | Tools & Frameworks |
-| :--- | :--- |
-| **Frontend** | React 18, JavaScript/JSX, CSS |
-| **Backend API** | FastAPI, Uvicorn, Pydantic v2, WebSockets, Aiofiles |
-| **AI & Computer Vision** | PyTorch, Ultralytics (YOLO), Segmentation Models PyTorch (U-Net++), OpenCV, Pillow, Albumentations |
-| **Datasets** | Kvasir-SEG (Training & Validation), PolypDB (External Evaluation) |
-| **Tooling & Environment** | Python 3.10+, Node.js 18+, Docker |
+The included model wrappers use PyTorch, Ultralytics, segmentation-models-pytorch,
+OpenCV, and NumPy. Exact versions are pinned in `backend/requirements.txt`.
 
----
+## Model Files
 
-## 🚀 Getting Started
+Model weights are deliberately excluded from Git because they can be large and may have separate licensing terms. Place the files locally at:
 
-### Prerequisites
+```text
+models/detector/best.pt
+models/segmenter/best.pth
+```
 
-- **Python**: `^3.10`
-- **Node.js**: `^18.0` (with `npm`)
-- **CUDA** *(Optional, recommended for fast GPU inference)*: NVIDIA GPU with CUDA support
+The detector checkpoint must be compatible with Ultralytics YOLO. The segmenter checkpoint must match the configured architecture and encoder:
 
----
+```env
+SEGMENTER_ARCHITECTURE=unet
+SEGMENTER_ENCODER_NAME=resnet34
+```
 
-### 1. Clone the Repository & Configure Environment
+Do not publish private patient data, trained checkpoints with unclear licensing,
+or datasets that you are not authorized to redistribute.
 
-```bash
-git clone https://github.com/Abdulrahman-Mahmoud-12/ENDO-X.git
+## Local Installation
+
+### 1. Clone the repository
+
+```powershell
+git clone <YOUR_GITHUB_REPOSITORY_URL>
 cd ENDO-X
 ```
 
-Copy the sample configuration file to `.env`:
+### 2. Create the Python environment
 
-```bash
-cp .env.example .env
-```
+Windows PowerShell:
 
----
-
-### 2. Backend Setup & Run
-
-#### Option A: Quick Run (Windows Script)
-Double-click `run_backend.bat` or run in terminal:
-```cmd
-run_backend.bat
-```
-
-#### Option B: Manual Setup
-```bash
-# Create virtual environment
+```powershell
 python -m venv .venv
-
-# Activate virtual environment
-# Windows:
-.venv\Scripts\activate
-# Linux/macOS:
-# source .venv/bin/activate
-
-# Install backend dependencies
-cd backend
-pip install -r requirements.txt
-
-# Run FastAPI server
-python -m uvicorn app.main:app --host 127.0.0.1 --port 8080 --reload
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r backend\requirements.txt
 ```
 
-The backend server will start at `http://127.0.0.1:8080`.
-Documentation endpoints:
-- Swagger UI: `http://127.0.0.1:8080/docs`
-- Redoc: `http://127.0.0.1:8080/redoc`
+Linux or macOS:
 
----
-
-### 3. Frontend Setup & Run
-
-#### Option A: Quick Run (Windows Script)
-Double-click `run_frontend.bat` or run in terminal:
-```cmd
-run_frontend.bat
-```
-
-#### Option B: Manual Setup
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r backend/requirements.txt
+```
+
+### 3. Create backend configuration
+
+Copy the public template:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Then update `DETECTOR_MODEL_PATH` and `SEGMENTER_MODEL_PATH` if your weights are stored elsewhere.
+
+Never commit `.env`. It is ignored by Git.
+
+### 4. Install frontend dependencies
+
+```powershell
 cd frontend
+npm ci
+cd ..
+```
 
-# Install Node modules
-npm install
+## Configuration
 
-# Start React development server
+The backend reads settings from the root `.env` file. Important values include:
+
+| Variable                         | Default                     | Description                                |
+| -------------------------------- | --------------------------- | ------------------------------------------ |
+| `HOST`                           | `0.0.0.0`                   | Backend bind host                          |
+| `PORT`                           | `8000`                      | Backend port                               |
+| `DEVICE`                         | `auto`                      | `auto`, `cpu`, `cuda`, or `cuda:0`         |
+| `DETECTOR_MODEL_PATH`            | `models/detector/best.pt`   | YOLO weights                               |
+| `DETECTOR_IMAGE_SIZE`            | `640`                       | YOLO inference image size                  |
+| `SEGMENTER_MODEL_PATH`           | `models/segmenter/best.pth` | U-Net weights                              |
+| `SEGMENTATION_MODE`              | `independent`               | Full-image or detector-region segmentation |
+| `DETECTION_CONFIDENCE_THRESHOLD` | `0.25`                      | Minimum detector confidence                |
+| `DETECTION_IOU_THRESHOLD`        | `0.25`                      | YOLO NMS IoU threshold                     |
+| `SEGMENTATION_MASK_THRESHOLD`    | `0.5`                       | Probability threshold for mask pixels      |
+| `DETECTION_ROI_MARGIN`           | `0.15`                      | Crop expansion in region mode              |
+| `MAX_IMAGE_SIZE_MB`              | `15`                        | Image upload limit                         |
+| `MAX_VIDEO_SIZE_MB`              | `250`                       | Video upload limit                         |
+| `LIVE_TARGET_FPS`                | `15`                        | Live-mode target setting                   |
+| `CORS_ORIGINS`                   | local origins               | Comma-separated browser origins            |
+
+### Segmentation modes
+
+Independent full-image segmentation:
+
+```env
+SEGMENTATION_MODE=independent
+```
+
+This runs detection and segmentation separately on the same input image. The segmenter runs even when detection returns no boxes.
+
+Detector-region segmentation:
+
+```env
+SEGMENTATION_MODE=detected_regions
+```
+
+This runs segmentation once for every detected bounding-box crop. Use this mode only when the segmentation checkpoint was trained on detector-style crops.
+
+## Running the Application
+
+### Backend
+
+From the repository root:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+$env:PYTHONPATH="$PWD\backend"
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+Or use:
+
+```powershell
+.\run_backend.bat
+```
+
+Open the API documentation at:
+
+```text
+http://localhost:8000/docs
+```
+
+### Frontend
+
+In a second terminal:
+
+```powershell
+cd frontend
 npm start
 ```
 
-The frontend web application will open at `http://localhost:3000`.
+Open:
 
----
-
-## 📡 API Reference
-
-### Health Check
-- `GET /health` or `GET /api/v1/health`
-- **Response:**
-  ```json
-  {
-    "status": "healthy",
-    "detector": "loaded",
-    "segmenter": "loaded"
-  }
-  ```
-
-### Image Analysis
-- `POST /api/v1/predict/image`
-- **Payload:** `multipart/form-data` with `file` key containing image (`.jpg`, `.png`).
-- **Response:** JSON containing bounding boxes, segmentation masks, overlaid base64 preview, and timing stats.
-
-### Video Processing
-- `POST /api/v1/predict/video`
-- **Payload:** `multipart/form-data` with `file` key containing video (`.mp4`, `.avi`).
-- **Response:** JSON output detailing processed video path, total frames, tracked objects, and average FPS.
-
-### Live Stream Processing
-- `WebSocket /api/v1/predict/live`
-- Transmits raw frame buffers and receives annotated frame results and live telemetry over WebSockets.
-
----
-
-## 📊 Datasets & Training
-
-The models in ENDO-X are trained and evaluated using standard GI endoscopy benchmarks:
-- **[Kvasir-SEG](https://endovision.sintef.no/kvasir-seg.html):** Primary dataset providing endoscopy frames with pixel-level polyp segmentations and bounding box annotations.
-- **[PolypDB](https://github.com/):** Secondary dataset utilized for cross-dataset external generalization testing.
-
-### Training & Evaluation Metrics
-- **Detection:** mAP@50, mAP@50:95, Precision, Recall.
-- **Segmentation:** Dice Coefficient (F1-score), Intersection over Union (IoU).
-- **Performance:** Inference Latency (ms), Frames Per Second (FPS), Memory footprint.
-
-To launch training experiments, navigate to the `training/` folder:
-```bash
-# Detector training
-python training/detection/train.py --config training/configs/detection.yaml
-
-# Segmenter training
-python training/segmentation/train.py --config training/configs/segmentation.yaml
+```text
+http://localhost:3000
 ```
 
----
+The frontend uses `frontend/.env` locally:
 
-## 🤝 Acknowledgments
+```env
+PORT=3000
+HOST=localhost
+REACT_APP_API_URL=http://localhost:8000
+```
 
-Developed during the **NTI Summer Training - Computer Vision Track**. Special thanks to the mentors and team members contributing to the development of ENDO-X.
+### Available frontend modes
+
+- **IMAGE:** choose an image, click `Analyze Image`, and inspect the original and annotated output.
+- **VIDEO:** choose a video, click `Process Video`, and download/play the annotated output.
+- **LIVE:** allow camera access, then start the WebSocket camera stream.
+
+## API Reference
+
+All versioned HTTP routes use the `/api/v1` prefix.
+
+### Health
+
+```http
+GET /api/v1/health
+```
+
+Example response:
+
+```json
+{
+  "status": "healthy",
+  "app_name": "ENDO-X",
+  "app_version": "0.1.0",
+  "device": "cpu",
+  "detector": "loaded",
+  "segmenter": "loaded"
+}
+```
+
+`status` becomes `degraded` when a required model is not loaded.
+
+### Image prediction
+
+```http
+POST /api/v1/predict/image
+Content-Type: multipart/form-data
+```
+
+Form field:
+
+```text
+file=<image file>
+```
+
+Optional query parameters:
+
+```text
+confidence_threshold=<0.0 to 1.0>
+return_overlay=true|false
+```
+
+Example response shape:
+
+```json
+{
+  "status": "success",
+  "detections": [
+    {
+      "class": "polyp",
+      "confidence": 0.91,
+      "bbox": [120.0, 85.0, 430.0, 350.0]
+    }
+  ],
+  "segmentations": [
+    {
+      "detection_index": -1,
+      "mask_area_px": 18420,
+      "polygon": [
+        [130.0, 90.0],
+        [200.0, 95.0]
+      ]
+    }
+  ],
+  "overlay_image_url": "/storage/outputs/result.png",
+  "inference_time_ms": 842.5
+}
+```
+
+A `detection_index` of `-1` identifies an independent full-image segmentation mask.
+
+### Video prediction
+
+```http
+POST /api/v1/predict/video?sample_rate=10
+Content-Type: multipart/form-data
+```
+
+The `sample_rate` value controls AI inference frequency. `sample_rate=10` means inference runs on frames 0, 10, 20, and so on; skipped frames reuse the most recent annotation.
+
+Example response shape:
+
+```json
+{
+  "status": "success",
+  "output_video_url": "/storage/outputs/result.mp4",
+  "summary": {
+    "total_frames": 300,
+    "frames_with_polyp": 120,
+    "avg_fps": 0.2,
+    "avg_latency_ms": 4800.0,
+    "output_fps": 30.0
+  }
+}
+```
+
+`avg_fps` is model inference throughput. `output_fps` is the playback FPS of the generated file.
+
+### Live WebSocket
+
+```text
+ws://localhost:8000/api/v1/predict/live
+```
+
+Send binary JPEG frame data. The server returns JSON:
+
+```json
+{
+  "status": "success",
+  "frame": "<base64 JPEG>",
+  "frame_index": 0,
+  "fps": 0.2,
+  "latency_ms": 4800.0,
+  "detections": [
+    {
+      "class": "polyp",
+      "confidence": 0.91,
+      "bbox": [120.0, 85.0, 430.0, 350.0],
+      "track_id": 1,
+      "frame_count": 4
+    }
+  ]
+}
+```
+
+For HTTPS deployments, use `wss://` instead of `ws://`.
+
+### Error responses
+
+Handled API errors use this shape:
+
+```json
+{
+  "status": "error",
+  "error_code": "invalid_file_type",
+  "message": "Unsupported file type"
+}
+```
+
+Common error codes include `invalid_file_type`, `file_too_large`,
+`decode_error`, `unsupported_video_format`, `corrupt_video`, and
+`model_not_loaded`.
+
+## Testing
+
+Run the full test suite:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
+Run focused tests:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q tests\backend\test_health.py
+.\.venv\Scripts\python.exe -m pytest -q tests\backend\test_live.py
+.\.venv\Scripts\python.exe -m pytest -q tests\backend\test_pipeline_modes.py
+.\.venv\Scripts\python.exe -m pytest -q tests\backend\test_video.py
+```
+
+Build the frontend:
+
+```powershell
+cd frontend
+npm ci
+npm run build
+```
+
+The real-weight image test depends on a checkpoint that detects the supplied fixture. If the local checkpoint returns zero detections, that test can fail even though the API and mocked pipeline tests pass; this indicates model/fixture mismatch rather than an HTTP contract failure.
+
+## Docker
+
+The backend image is defined in `backend/Dockerfile`. Compose mounts local model files and runtime storage:
+
+```powershell
+docker compose config
+docker compose up --build backend
+```
+
+The backend is available at `http://localhost:8000`. The Compose frontend service is intended for development; for a hosted frontend, build the React app and deploy the `frontend/build` directory.
+
+Do not bake private weights or `.env` files into a public image.
+
+## Vercel and ngrok Demonstration Deployment
+
+This setup hosts the static React frontend on Vercel and exposes the local FastAPI server through ngrok. It is suitable for demonstrations, not production.
+
+### Start FastAPI
+
+```powershell
+$env:PYTHONPATH="$PWD\backend"
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+
+### Start ngrok
+
+```powershell
+ngrok config add-authtoken <YOUR_NGROK_TOKEN>
+ngrok http 8000
+```
+
+Copy the HTTPS forwarding URL, for example:
+
+```text
+https://example.ngrok-free.app
+```
+
+Verify:
+
+```text
+https://example.ngrok-free.app/api/v1/health
+```
+
+### Configure Vercel
+
+1. Import the repository into Vercel.
+2. Set the project root directory to `frontend`.
+3. Use `npm ci` as the install command.
+4. Use `npm run build` as the build command.
+5. Use `build` as the output directory.
+6. Add this production environment variable:
+
+```text
+REACT_APP_API_URL=https://example.ngrok-free.app
+```
+
+7. Deploy or redeploy the frontend.
+8. Add the final Vercel origin to `CORS_ORIGINS` in the backend `.env`.
+9. Restart FastAPI.
+
+The browser uses the HTTPS ngrok URL for HTTP and converts it to `wss://` for live camera inference.
+
+Ngrok URLs can change after restart. Update the Vercel environment variable and redeploy whenever the URL changes.
+
+## Performance
+
+CPU inference can be slow because each sampled frame may run YOLO and U-Net. On a CPU-only machine, low inference FPS is expected. CUDA is recommended for live and dense video processing.
+
+Performance controls:
+
+- `DEVICE=cpu` or `DEVICE=cuda`
+- `DETECTOR_IMAGE_SIZE`
+- Video `sample_rate`
+- Browser live-camera resolution and JPEG quality
+- Optional `SEGMENTATION_MODE=detected_regions` when crop-based inference is appropriate
+
+For CPU video demonstrations, increase `sample_rate` rather than claiming the output video itself has a low playback FPS. The generated file retains the source playback rate.
+
+## Troubleshooting
+
+### Backend appears offline in the frontend
+
+1. Check `http://localhost:8000/api/v1/health` directly.
+2. Confirm `REACT_APP_API_URL` does not include `/api/v1` twice.
+3. Add the frontend origin to `CORS_ORIGINS`.
+4. Restart FastAPI after editing `.env`.
+5. Hard-refresh the browser.
+
+### Models are not loaded
+
+Check the paths and files:
+
+```powershell
+Test-Path models\detector\best.pt
+Test-Path models\segmenter\best.pth
+```
+
+Then inspect `/api/v1/health` and backend startup logs.
+
+### Output image has no segmentation
+
+Check that:
+
+- `SEGMENTER_MODEL_PATH` points to the correct checkpoint.
+- `SEGMENTER_ARCHITECTURE` matches training.
+- The mask area is not zero.
+- The backend was restarted after configuration changes.
+
+### Live camera is slow
+
+CPU-only inference is the usual cause. Reduce camera resolution, reduce JPEG quality, or use a GPU. The live endpoint processes one frame at a time to avoid building a stale frame queue.
+
+### WebSocket fails behind HTTPS
+
+Use `wss://` for the WebSocket connection. Browsers block insecure `ws://` connections from an HTTPS Vercel page.
+
+## Security and Privacy
+
+- Do not commit `.env`, tokens, credentials, or private URLs.
+- Do not commit patient-identifiable images or videos.
+- Do not expose the development backend publicly without authentication and access controls.
+- Validate upload size and extension limits before accepting media.
+- Treat model files and datasets according to their licenses.
+- Delete generated outputs regularly when handling sensitive data.
+
+## License and Data
+
+This repository should include a project license before public release. Add a `LICENSE` file appropriate for the project and document the licenses for:
+
+- Model checkpoints
+- Kvasir-SEG or other datasets
+- External libraries and pretrained encoders
+- Any downloaded sample media
+
+If you cannot redistribute a model or dataset, document how users can obtain it instead of committing it to the repository.
+
+## Acknowledgements
+
+ENDO-X was developed as an educational graduation project for the NTI Summer Training Computer Vision track. The project builds on the open-source Python, PyTorch, Ultralytics, segmentation-models-pytorch, OpenCV, FastAPI, and React ecosystems.

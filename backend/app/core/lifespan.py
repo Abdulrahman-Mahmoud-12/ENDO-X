@@ -87,6 +87,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.model_status = {"detector": "not_loaded", "segmenter": "not_loaded"}
     app.state.detector = None
     app.state.segmenter = None
+    app.state.tracker = None
+    app.state.tracker_status = "not_loaded"
 
     start = time.perf_counter()
 
@@ -115,12 +117,23 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         )
         app.state.model_status["segmenter"] = "loaded" if app.state.segmenter else "not_loaded"
 
+    if app.state.detector is not None and app.state.segmenter is not None:
+        try:
+            from app.models.tracker import PolypTracker
+
+            app.state.tracker = PolypTracker(settings=settings).load()
+            app.state.tracker_status = "loaded"
+        except (ImportError, RuntimeError) as exc:
+            logger.warning("Tracker unavailable; using passthrough tracking: %s", exc)
+            app.state.tracker_status = "fallback"
+
     elapsed = time.perf_counter() - start
     logger.info(
-        "Startup complete in %.2fs — detector=%s, segmenter=%s",
+        "Startup complete in %.2fs — detector=%s, segmenter=%s, tracker=%s",
         elapsed,
         app.state.model_status["detector"],
         app.state.model_status["segmenter"],
+        app.state.tracker_status,
     )
 
     yield
@@ -128,6 +141,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logger.info("Shutting down — releasing model resources")
     app.state.detector = None
     app.state.segmenter = None
+    app.state.tracker = None
     try:
         import torch
 

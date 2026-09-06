@@ -18,7 +18,7 @@ from app.domain.interfaces.segmenter import Segmenter
 from app.domain.interfaces.tracker import Track, Tracker
 from app.pipeline.base_pipeline import BasePipeline, PerObjectResult
 from app.schemas.prediction import BoundingBox, SegmentationMask
-from app.utils.annotation import draw_tracked_objects, overlay_mask
+from app.utils.annotation import draw_tracked_objects, overlay_full_mask, overlay_mask
 from app.utils.video import timed
 
 # Below this IoU, don't guess which detection a track's mask came from —
@@ -109,6 +109,9 @@ class VideoPipeline(BasePipeline):
             tracks = self.tracker.update(detect_segment_result.detections, frame)
 
         annotated = draw_tracked_objects(frame, tracks)
+        for mask in detect_segment_result.segmentations:
+            if mask.detection_index == -1:
+                annotated = overlay_full_mask(annotated, mask)
         for track in tracks:
             mask = self._match_mask(track, detect_segment_result.per_object)
             if mask is not None:

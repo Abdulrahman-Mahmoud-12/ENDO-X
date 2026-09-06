@@ -12,6 +12,9 @@ export const checkHealth = async () => {
     const data = await res.json();
     return { connected: true, data };
   } catch (err) {
-    return { connected: false, error: err.message };
+    return {
+      connected: false,
+      error: `Cannot reach ${API_BASE_URL}/api/v1/health from this browser. ${err.message}`,
+    };
   }
 };

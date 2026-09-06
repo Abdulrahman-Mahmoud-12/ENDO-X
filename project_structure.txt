@@ -1,169 +1,31 @@
 ENDO-X/
-│
-├── README.md                                            [ ]
-├── .gitignore                                            [x]
-├── .dockerignore                                          [x]
-├── .env.example                                          [x]
-├── docker-compose.yml                                     [x]   # backend only; frontend service added Phase 5
-│
 ├── backend/
-│   ├── Dockerfile                                          [x]
-│   ├── requirements.txt                                    [x]
-│   │
-│   └── app/
-│       ├── __init__.py                                     [x]
-│       ├── main.py                                          [x]   # create_app(), CORS, router mount, static mount
-│       │
-│       ├── core/
-│       │   ├── __init__.py                                  [x]
-│       │   ├── config.py                                    [x]   # Settings: paths, device, thresholds, CORS
-│       │   ├── logging.py                                   [ ]
-│       │   ├── exceptions.py                                [x]   # not in original plan — see note below
-│       │   └── lifespan.py                                  [~]   # skeleton only; real model loading = Phase 1
-│       │
-│       ├── domain/                                          [ ]   # NEW — added for modularity, build in Phase 1
-│       │   └── interfaces/
-│       │       ├── __init__.py
-│       │       ├── detector.py                              [~]    # Protocol: predict(image) -> list[Detection]
-│       │       └── segmenter.py                             [~]    # Protocol: predict(crop) -> SegmentationMask
-│       │
-│       ├── api/
-│       │   ├── __init__.py                                  [x]
-│       │   ├── router.py                                    [x]
-│       │   │
-│       │   └── v1/
-│       │       ├── __init__.py                              [x]
-│       │       ├── health.py                                [x]   # reports app.state model status
-│       │       ├── image.py                                 [x]   # Phase 2
-│       │       ├── video.py                                 [ ]   # Phase 3
-│       │       └── live.py                                  [ ]   # Phase 4
-│       │
-│       ├── schemas/
-│       │   ├── __init__.py                                  [x]
-│       │   └── prediction.py                                [x]   # BoundingBox, Detection, SegmentationMask,
-│       │                                                            # ImagePredictionResponse, VideoPredictionResponse,
-│       │                                                            # TrackedObject, HealthResponse, ErrorResponse
-│       │
-│       ├── models/
-│       │   ├── __init__.py                                  [ ]   # Phase 1
-│       │   ├── detector.py                                  [x]   # Phase 1 — PolypDetector (YOLO wrapper)
-│       │   ├── segmenter.py                                 [x]   # Phase 1 — PolypSegmenter (U-Net wrapper)
-│       │   └── tracker.py                                   [ ]   # Phase 3 — ByteTrack/BoT-SORT wrapper
-│       │
-│       ├── services/
-│       │   ├── __init__.py                                  [x]   # Phase 1
-│       │   ├── preprocessing_service.py                     [x]   # Phase 1
-│       │   ├── inference_service.py                         [x]   # Phase 2
-│       │   ├── image_service.py                             [x]   # Phase 2
-│       │   ├── video_service.py                             [ ]   # Phase 3
-│       │   └── live_service.py                              [ ]   # Phase 4
-│       │
-│       ├── utils/
-│       │   ├── __init__.py                                  [x]   # Phase 1
-│       │   ├── image.py                                     [x]   # Phase 1 — decode/resize/crop-by-bbox
-│       │   ├── visualization.py                             [x]   # Phase 2 — draw boxes/masks/labels
-│       │   └── video.py                                     [ ]   # Phase 3 — frame extraction/writer, FPS
-│       │
-│       └── storage/
-│           ├── .gitkeep                                      [x]
-│           ├── uploads/.gitkeep                              [x]
-│           └── outputs/.gitkeep                              [x]
-│
-│
-├── frontend/                                                [ ]   # entirely Phase 5
+│   ├── app/
+│   │   ├── api/v1/        health, image, video, live WebSocket routes
+│   │   ├── core/          settings, exceptions, application lifespan
+│   │   ├── domain/        detector, segmenter, tracker protocols
+│   │   ├── models/        YOLO, U-Net, and ByteTrack wrappers
+│   │   ├── pipeline/      image/video orchestration
+│   │   ├── schemas/       Pydantic API contracts
+│   │   ├── services/      upload and inference services
+│   │   ├── storage/       runtime mount points
+│   │   └── utils/         media, annotation, and visualization helpers
 │   ├── Dockerfile
+│   └── requirements.txt
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── api/           backend clients
+│   │   ├── components/    active live-camera component
+│   │   └── styles/
 │   ├── package.json
-│   ├── package-lock.json
-│   ├── tsconfig.json
-│   ├── vite.config.ts
-│   ├── index.html
-│   │
-│   └── src/
-│       ├── main.tsx
-│       ├── App.tsx
-│       ├── index.css
-│       ├── components/
-│       │   ├── Header.tsx
-│       │   ├── ModeSelector.tsx
-│       │   ├── ImageUploader.tsx
-│       │   ├── VideoUploader.tsx
-│       │   ├── CameraViewer.tsx
-│       │   ├── ImageViewer.tsx
-│       │   ├── VideoViewer.tsx
-│       │   ├── DetectionOverlay.tsx
-│       │   ├── SegmentationOverlay.tsx
-│       │   ├── InferenceStats.tsx
-│       │   └── LoadingIndicator.tsx
-│       ├── pages/
-│       │   └── EndoscopyDashboard.tsx
-│       ├── services/
-│       │   ├── api.ts
-│       │   ├── imageApi.ts
-│       │   ├── videoApi.ts
-│       │   └── liveSocket.ts
-│       ├── types/
-│       │   └── prediction.ts
-│       └── utils/
-│           ├── canvas.ts
-│           └── format.ts
-│
-│
-├── training/
-│   ├── README.md
-│   │
-│   ├── requirements.txt
-│   │
-│   ├── configs/
-│   │   ├── detection.yaml                  # Stores detection training configuration and hyperparameters.
-│   │   └── segmentation.yaml               # Stores segmentation training configuration and hyperparameters.
-│   │
-│   ├── data/
-│   │   ├── README.md                       # Explains how datasets should be downloaded and prepared.
-│   │   ├── raw/
-│   │   │   └── .gitkeep                    # Placeholder for original downloaded datasets.
-│   │   └── processed/
-│   │       └── .gitkeep                    # Placeholder for preprocessed training data.
-│   │
-│   ├── detection/
-│   │   ├── train.py                        # Trains the polyp detection model.
-│   │   ├── validate.py                     # Evaluates the trained detection model.
-│   │   └── predict.py                      # Runs detection inference during model experiments.
-│   │
-│   ├── segmentation/
-│   │   ├── train.py                        # Trains the polyp segmentation model.
-│   │   ├── validate.py                     # Evaluates segmentation performance using segmentation metrics.
-│   │   └── predict.py                      # Runs segmentation inference during model experiments.
-│   │
-│   ├── preprocessing/
-│   │   ├── prepare_detection.py            # Converts raw annotations into the detection training format.
-│   │   ├── prepare_segmentation.py         # Prepares images and masks for segmentation training.
-│   │   └── augmentations.py                # Defines training image and mask augmentation techniques.
-│   │
-│   ├── evaluation/
-│   │   ├── detection_metrics.py            # Calculates detection metrics such as mAP, precision, and recall.
-│   │   ├── segmentation_metrics.py         # Calculates Dice, IoU, precision, and recall for segmentation.
-│   │   └── benchmark.py                    # Measures inference latency, FPS, and resource performance.
-│   │
-│   └── experiments/
-│       └── .gitkeep                        # (unchanged from original — Kvasir-SEG/PolypDB
-│                                                                      #  train/validate/predict scripts, configs)
-│
-├── models/                                                  [x]
-│   ├── detector/                                                  # place trained .pt weights here
-│   └── segmenter/                                                 # place trained .pth weights here
-│
-├── tests/
-│   ├── backend/
-│   │   ├── test_health.py                                   [x]   # NOT YET IMPLEMENTED — do this first, see below
-│   │   ├── test_image.py                                    [x]   # Phase 2
-│   │   └── test_video.py                                    [ ]   # Phase 3
-│   │
-│   └── ai/
-│       ├── test_detector.py                                 [x]   # Phase 1
-│       └── test_segmenter.py                                [x]   # Phase 1
-│
-└── docs/                                                    [ ]   # Phase 6
-    ├── architecture.md
-    ├── api.md
-    ├── training.md
-    └── deployment.md
+│   └── package-lock.json
+├── models/                local ignored detector/segmenter weights
+├── tests/                 backend, pipeline, and AI tests
+├── training/              detector training and segmentation inference
+├── app/storage/           local ignored runtime outputs
+├── .env.example
+├── docker-compose.yml
+├── run_backend.bat
+├── run_frontend.bat
+└── README.md

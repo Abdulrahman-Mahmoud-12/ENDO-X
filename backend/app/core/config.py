@@ -51,10 +51,13 @@ class Settings(BaseSettings):
 
     # --- Model weights -------------------------------------------------
     detector_model_path: Path = BASE_DIR / "models" / "detector" / "best.pt"
+    detector_image_size: int = 640
     segmenter_model_path: Path = BASE_DIR / "models" / "segmenter" / "best.pth"
     segmenter_encoder_name: str = "resnet34"
     segmenter_architecture: str = "unet"
     segmenter_image_size: int = 256
+    segmentation_mode: str = "independent"
+    tracker_type: str = "bytetrack"
 
     # --- Inference thresholds ------------------------------------------
     detection_confidence_threshold: float = Field(default=0.2, ge=0.0, le=1.0)
@@ -85,7 +88,14 @@ class Settings(BaseSettings):
     @property
     def cors_origins_list(self) -> list[str]:
         """CORS origins as a clean list, parsed from the comma-separated env var."""
-        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+        configured = [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+        local_origins = [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+        ]
+        return list(dict.fromkeys(configured + local_origins))
 
     @property
     def allowed_image_extensions_list(self) -> list[str]:
