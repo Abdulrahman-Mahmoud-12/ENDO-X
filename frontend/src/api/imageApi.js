@@ -29,12 +29,28 @@ export const analyzeImage = async (file, confidenceThreshold = null) => {
       ? Math.max(...detections.map((d) => d.confidence))
       : 0;
 
+  let annotatedImageUrl = null;
+  if (data.overlay_image_url) {
+    const overlayResponse = await fetch(
+      `${API_BASE_URL}${data.overlay_image_url}`,
+      { headers: { "ngrok-skip-browser-warning": "true" } },
+    );
+    if (!overlayResponse.ok) {
+      throw new Error(
+        `Annotated image failed with status ${overlayResponse.status}`,
+      );
+    }
+    const overlayBlob = await overlayResponse.blob();
+    if (!overlayBlob.type.startsWith("image/")) {
+      throw new Error("Backend returned an invalid annotated image");
+    }
+    annotatedImageUrl = URL.createObjectURL(overlayBlob);
+  }
+
   return {
     raw: data,
     status: data.status,
-    annotated_image: data.overlay_image_url
-      ? `${API_BASE_URL}${data.overlay_image_url}?ngrok-skip-browser-warning=true`
-      : null,
+    annotated_image: annotatedImageUrl,
     polyps_found: detections.length,
     confidence: maxConf,
     latency_ms: data.inference_time_ms || 0,
