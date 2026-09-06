@@ -4,7 +4,10 @@ export const checkHealth = async () => {
   try {
     const res = await fetch(`${API_BASE_URL}/api/v1/health`, {
       method: "GET",
-      headers: { Accept: "application/json" },
+      headers: {
+        Accept: "application/json",
+        "ngrok-skip-browser-warning": "true",
+      },
     });
     if (!res.ok) {
       throw new Error(`HTTP error ${res.status}`);

@@ -8,6 +8,7 @@ export const processVideo = async (file, sampleRate = 1) => {
 
   const res = await fetch(url, {
     method: "POST",
+    headers: { "ngrok-skip-browser-warning": "true" },
     body: formData,
   });
 
@@ -27,7 +28,7 @@ export const processVideo = async (file, sampleRate = 1) => {
     raw: data,
     status: data.status,
     output_video_url: data.output_video_url
-      ? `${API_BASE_URL}${data.output_video_url}`
+      ? `${API_BASE_URL}${data.output_video_url}?ngrok-skip-browser-warning=true`
       : null,
     total_frames: summary.total_frames || 0,
     frames_with_polyp: summary.frames_with_polyp || 0,

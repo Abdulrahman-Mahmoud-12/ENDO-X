@@ -7,11 +7,11 @@ export default function LiveCamera() {
   const canvasRef = useRef(null);
   const socketRef = useRef(null);
   const timerRef = useRef(null);
+  const sendingRef = useRef(false);
   const [running, setRunning] = useState(false);
   const [annotatedFrame, setAnnotatedFrame] = useState(null);
   const [stats, setStats] = useState({ fps: 0, latency: 0, detections: 0 });
   const [error, setError] = useState(null);
-  const sendingRef = useRef(false);
 
   const stop = () => {
     if (timerRef.current) window.clearInterval(timerRef.current);
@@ -40,8 +40,7 @@ export default function LiveCamera() {
       videoRef.current.srcObject = stream;
       await videoRef.current.play();
 
-      const socketUrl =
-        API_BASE_URL.replace(/^http/, "ws") + "/api/v1/predict/live";
+      const socketUrl = `${API_BASE_URL.replace(/^http/, "ws")}/api/v1/predict/live?ngrok-skip-browser-warning=true`;
       const socket = new WebSocket(socketUrl);
       socket.binaryType = "arraybuffer";
       socket.onopen = () => {
@@ -77,6 +76,7 @@ export default function LiveCamera() {
         const data = JSON.parse(event.data);
         if (data.status === "error") {
           setError(data.message || "Live inference failed");
+          sendingRef.current = false;
           return;
         }
         setAnnotatedFrame(`data:image/jpeg;base64,${data.frame}`);
@@ -137,7 +137,7 @@ export default function LiveCamera() {
         <span>FPS: {stats.fps.toFixed(1)}</span>
         <span>Latency: {stats.latency.toFixed(1)} ms</span>
         <span>Detections: {stats.detections}</span>
-        {error && <span style={{ color: "#ef4444" }}>{error}</span>}
+        {error && <span style={{ color: "#e88989" }}>{error}</span>}
       </div>
     </div>
   );

@@ -11,25 +11,29 @@ export const analyzeImage = async (file, confidenceThreshold = null) => {
 
   const res = await fetch(url, {
     method: "POST",
+    headers: { "ngrok-skip-browser-warning": "true" },
     body: formData,
   });
 
   const data = await res.json();
 
   if (!res.ok || data.status === "error") {
-    throw new Error(data.message || data.detail || `Upload failed with status ${res.status}`);
+    throw new Error(
+      data.message || data.detail || `Upload failed with status ${res.status}`,
+    );
   }
 
   const detections = data.detections || [];
-  const maxConf = detections.length > 0
-    ? Math.max(...detections.map((d) => d.confidence))
-    : 0;
+  const maxConf =
+    detections.length > 0
+      ? Math.max(...detections.map((d) => d.confidence))
+      : 0;
 
   return {
     raw: data,
     status: data.status,
     annotated_image: data.overlay_image_url
-      ? `${API_BASE_URL}${data.overlay_image_url}`
+      ? `${API_BASE_URL}${data.overlay_image_url}?ngrok-skip-browser-warning=true`
       : null,
     polyps_found: detections.length,
     confidence: maxConf,
